@@ -23,15 +23,30 @@ class Phoneme:
         return self.GlyphID.__hash__()
 
 
-def phoible(query):
+def getHRLanguages(fname, hrthreshold=1000):
+    """
+    :param fname: the name of the file containing filesizes. Created using wc -l in the wikidata folder
+    :param hrthreshold: how big a set of transliteration pairs needs to be considered high resource
+    :return: a list of language names (in ISO 639-3 format?)
+    """
 
+    hrlangs = set()
+    with open(fname) as fs:
+        for line in fs:
+            long,iso639_3,iso639_1,size = line.strip().split()
+            if int(size) > hrthreshold:
+                hrlangs.add(iso639_3)
+    return hrlangs
+
+    
+def loadLangs(fname):
     langs = defaultdict(set)
 
     langsseen = set()
 
-    id2name = {}
+    code2name = {}
 
-    with open("../gold-standard/phoible-phonemes.tsv") as p:
+    with open(fname) as p:
 
         lines = p.readlines()
 
@@ -41,29 +56,58 @@ def phoible(query):
             inventoryid = sline[0]
             langcode = sline[2]
 
-            id2name[int(inventoryid)] = langcode
+            code2name[langcode] = sline[3]
 
             if sline[4] != "1":
                 continue
 
             p = Phoneme(*sline[-6:])
 
-            langs[int(inventoryid)].add(p)
+            #langs[int(inventoryid)].add(p)
+            langs[langcode].add(p)
+            
+    return langs,code2name
+    
+    
+
+def langsim(query, langs, only_hr=False):
 
     orig = langs[query]
+
+
+    import os
+    __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    hrlangs = getHRLanguages(os.path.join(__location__, "langsizes.txt"))
 
     dists = []
 
     for langid in langs.keys():
         if langid == query:
             continue
-        d = len(langs[langid].intersection(orig))
-        dists.append((d, id2name[langid]))
-
+        if not only_hr or langid in hrlangs:
+            d = len(langs[langid].intersection(orig))
+            dists.append((d, langid))
+            
     topk = 100
     ret = sorted(dists, reverse=True)[:topk]
 
     return ret
 
 if __name__ == "__main__":
-    print phoible(45)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("lang")
+    #parser.add_argument("threshold", type=float)
+    
+    #parser.add_argument("--topk", help="show top k results", type=int, default=10)
+    parser.add_argument("--highresource", help="only compare with high resource", action="store_true")
+    
+    args = parser.parse_args()
+
+    print "lang: ", args.lang
+    #print "threshold: ", args.threshold
+
+    #print langsim("language.csv", args.lang, args.threshold, phon=args.phon, topk=args.topk, only_hr=args.highresource)
+
+    langs,code2name = loadLangs("../gold-standard/phoible-phonemes.tsv")
+    print langsim(args.lang, langs, only_hr=args.highresource)
