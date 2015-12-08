@@ -81,7 +81,7 @@ def langsim(query, langs, only_hr=False):
 
     dists = []
 
-    for langid in langs.keys():
+    for langid in sorted(langs.keys(), reverse=True):
         if langid == query:
             continue
         if not only_hr or langid in hrlangs:
