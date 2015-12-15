@@ -1,4 +1,5 @@
 from collections import defaultdict
+from scipy.spatial.distance import cosine
 
 class Phoneme:
 
@@ -99,18 +100,18 @@ def langsim(query, langs, only_hr=False):
             # try getting F1 here instead of just intersection.
             #d = len(langs[langid].intersection(orig))
             tgt = langs[langid]
-            tp = len(tgt.intersection(orig))
-            fp = len(tgt.difference(orig))
-            fn = len(orig.difference(tgt))
-            prec = tp / float(tp + fp) # this is also len(tgt)
-            recall = tp / float(tp + fn) # this is also len(orig)
-            f1 = 2 * prec * recall / (prec + recall)
-            dists.append((f1, langid))
+            #score = getF1(orig, tgt)
+            score = getDistinctiveFeatures(orig,tgt)
+
+            dists.append((score, langid))
+
             
     topk = 500
     ret = sorted(dists, reverse=True)[:topk]
 
     return ret
+
+
 
 def comparePhonemes(fname, l1, l2):
     langs, code2name = loadLangs(fname)
@@ -127,21 +128,63 @@ def comparePhonemes(fname, l1, l2):
     print "unique to {0}:".format(l1), l1set.difference(l2set)
     print "unique to {0}:".format(l2), l2set.difference(l1set)
 
-def compare(lang1, lang2, langs):
+
+def getF1(lang1, lang2):
     """
     Instead of getting all language similarities, just get these two.
+    lang1 and lang2 are phoneme sets.
     """
-    print "comparing", lang1, lang2
 
-    src = langs[lang1]
-    tgt = langs[lang2]
-    tp = len(tgt.intersection(src))
-    fp = len(tgt.difference(src))
-    fn = len(src.difference(tgt))
+    tp = len(lang2.intersection(lang1))
+    fp = len(lang2.difference(lang1))
+    fn = len(lang1.difference(lang2))
     prec = tp / float(tp + fp) # this is also len(tgt)
     recall = tp / float(tp + fn) # this is also len(orig)
     f1 = 2 * prec * recall / (prec + recall)
     return f1
+
+
+def readFeatureFile():
+    with open("../raw-data/FEATURES/phoible-segments-features.tsv") as f:
+        phonememap = {}
+        for line in f:
+            sline = line.split("\t")
+            phoneme = sline[0]
+            feats = map(lambda v: 1 if v == "+" else 0, sline[1:])  # FIXME: currently treats unknowns as 0
+            phonememap[phoneme] = feats
+    return phonememap
+
+
+def getDistinctiveFeatures(lang1, lang2):
+    """
+    Again, lang1 and lang2 are phoneme sets
+    :param lang1:
+    :param lang2:
+    :return:
+    """
+    if len(lang1) == 0:
+        print "couldn't find " + str(lang1)
+        return -1
+    if len(lang2) == 0:
+        print "couldn't find " + str(lang2)
+        return -1
+
+    pmap = readFeatureFile()
+
+    total = 0
+    for p in lang1:
+        # get closest in lang2
+        maxsim = 0  # just a small number...
+        for p2 in lang2:
+            sim = 1-cosine(pmap[p.Phoneme], pmap[p2.Phoneme])
+            #print dist
+            if sim > maxsim:
+                maxsim = sim
+        print p,maxsim
+        total += maxsim
+
+    print total
+
 
 
 if __name__ == "__main__":
@@ -151,7 +194,7 @@ if __name__ == "__main__":
     group.add_argument("--langsim", nargs = 1)
     group.add_argument("--langdata", nargs = 1)
     group.add_argument("--compare", nargs = 2)
-    parser.add_argument("--comp", help="compare with this lang")
+    group.add_argument("--comp", help="compare with this lang", nargs=2)
     #parser.add_argument("threshold", type=float)
     
     #parser.add_argument("--topk", help="show top k results", type=int, default=10)
@@ -169,9 +212,12 @@ if __name__ == "__main__":
     elif args.compare:
         print "langs: ", args.compare
         langs,code2name = loadLangs("../gold-standard/phoible-phonemes.tsv")
-        print compare(args.compare[0], args.compare[1], langs)
+        print getF1(langs[args.compare[0]], langs[args.compare[1]])
     elif args.comp:
-        comparePhonemes("../gold-standard/phoible-phonemes.tsv", args.lang, args.comp)
+        print args.comp
+        #comparePhonemes("../gold-standard/phoible-phonemes.tsv", args.lang, args.comp)
+        langs,code2name = loadLangs("../gold-standard/phoible-phonemes.tsv")
+        getDistinctiveFeatures(langs[args.comp[0]], langs[args.comp[1]])
     elif args.langdata:
         print "getting langdata... for", args.langdata
         d = loadLangData("../gold-standard/phoible-aggregated.tsv")
