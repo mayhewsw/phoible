@@ -1,2 +1,6 @@
 # file types
 .Rhistory
+.pyc
+*~
+.idea
+.iml
