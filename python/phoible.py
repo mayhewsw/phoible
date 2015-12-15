@@ -154,7 +154,7 @@ def readFeatureFile():
         phonememap = {}
         for line in f:
             sline = line.split("\t")
-            phoneme = sline[0]
+            phoneme = sline[0].decode("utf8")
             feats = map(lambda v: 1 if v == "+" else 0, sline[1:])  # FIXME: currently treats unknowns as 0
             phonememap[phoneme] = feats
     return phonememap
@@ -176,12 +176,19 @@ def getDistinctiveFeatures(lang1, lang2):
 
     pmap = readFeatureFile()
 
+    print pmap.keys()
+
     total = 0
     for p in lang1:
         # get closest in lang2
         maxsim = 0  # just a small number...
         for p2 in lang2:
-            sim = 1-cosine(pmap[p.Phoneme], pmap[p2.Phoneme])
+            pu1 = p.Phoneme.decode("utf8")
+            pu2 = p2.Phoneme.decode("utf8")
+            if pu1 in pmap and pu2 in pmap:
+                sim = 1-cosine(pmap[pu1], pmap[pu2])
+            else:
+                sim = 0
             #print dist
             if sim > maxsim:
                 maxsim = sim
