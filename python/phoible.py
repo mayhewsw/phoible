@@ -74,7 +74,6 @@ def langsim(query, langs, only_hr=False):
 
     orig = langs[query]
 
-
     import os
     __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     hrlangs = getHRLanguages(os.path.join(__location__, "langsizes.txt"))
@@ -93,21 +92,37 @@ def langsim(query, langs, only_hr=False):
 
     return ret
 
+def comparePhonemes(fname, l1, l2):
+    langs, code2name = loadLangs(fname)
+
+    l1set = langs[l1]
+    l2set = langs[l2]
+
+    for p in l1set:
+        u = p.Phoneme.decode("utf8")
+        print u
+        print list(u)
+
+    print "intersection: ", l1set.intersection(l2set)
+    print "unique to {0}:".format(l1), l1set.difference(l2set)
+    print "unique to {0}:".format(l2), l2set.difference(l1set)
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("lang")
-    #parser.add_argument("threshold", type=float)
-    
-    #parser.add_argument("--topk", help="show top k results", type=int, default=10)
-    parser.add_argument("--highresource", help="only compare with high resource", action="store_true")
+    parser.add_argument("--comp", help="compare with this lang")
+    parser.add_argument("--highresource", "-hr", help="only compare with high resource", action="store_true")
     
     args = parser.parse_args()
 
     print "lang: ", args.lang
-    #print "threshold: ", args.threshold
+    if args.comp:
+        print "comparing with: ", args.comp
 
-    #print langsim("language.csv", args.lang, args.threshold, phon=args.phon, topk=args.topk, only_hr=args.highresource)
+    if args.comp:
+        comparePhonemes("../gold-standard/phoible-phonemes.tsv", args.lang, args.comp)
+    else:
+        langs,code2name = loadLangs("../gold-standard/phoible-phonemes.tsv")
+        print langsim(args.lang, langs, only_hr=args.highresource)
 
-    langs,code2name = loadLangs("../gold-standard/phoible-phonemes.tsv")
-    print langsim(args.lang, langs, only_hr=args.highresource)
