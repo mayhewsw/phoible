@@ -145,7 +145,12 @@ def getF1(lang1, lang2):
 
 
 def readFeatureFile():
-    with open("../raw-data/FEATURES/phoible-segments-features.tsv") as f:
+
+    import os
+    __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    fname = os.path.join(__location__, "../raw-data/FEATURES/phoible-segments-features.tsv")
+
+    with open(fname) as f:
         phonememap = {}
         for line in f:
             sline = line.split("\t")
