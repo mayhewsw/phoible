@@ -176,8 +176,6 @@ def getDistinctiveFeatures(lang1, lang2):
 
     pmap = readFeatureFile()
 
-    print pmap.keys()
-
     total = 0
     for p in lang1:
         # get closest in lang2
@@ -192,10 +190,10 @@ def getDistinctiveFeatures(lang1, lang2):
             #print dist
             if sim > maxsim:
                 maxsim = sim
-        print p,maxsim
         total += maxsim
 
     print total
+    return total
 
 
 
