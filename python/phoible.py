@@ -17,8 +17,11 @@ class Phoneme:
         self.CombinedClass = CombinedClass
         self.NumOfCombinedGlyphs = NumOfCombinedGlyphs
 
+        # this is a printable version of Phoneme
+        self.p = Phoneme.encode("utf8")
+
     def __repr__(self):
-        return "Phoneme:[" + self.Phoneme + "]"
+        return "Phoneme:[" + self.p + "]"
 
     def __eq__(self, other):
         return other.GlyphID == self.GlyphID
@@ -139,8 +142,8 @@ def langsim(query, langs, only_hr=False):
             # try getting F1 here instead of just intersection.
             tgt = langs[langid]
 
-            #score = getF1(orig, tgt)
-            score = getDistinctiveFeatures(orig, tgt, pmap)
+            score = getF1(orig, tgt)
+            #score = getDistinctiveFeatures(orig, tgt, pmap)
 
             dists.append((score, langid))
 
@@ -228,7 +231,9 @@ def readFeatureFile():
 
     return phonememap
 
+# used for memoization.
 phonedist = {}
+
 
 def getDistinctiveFeatures(lang1, lang2, phonemeMap):
     """
@@ -245,20 +250,16 @@ def getDistinctiveFeatures(lang1, lang2, phonemeMap):
         print "ERROR: second lang is empty or doesn't exist"
         return -1
 
-    # keeps track of the phonemes in l2 that have been mapped.
-    mappedl2 = set()
+    # loop over all pairs.
+    scores = {}
 
-    common = lang2.intersection(lang1)
-    lang2only = lang2.difference(lang1)
-    lang1only = lang1.difference(lang2)
+    total = 0
 
-    tp = len(common)
-    fp = 0
-    for p in lang1only:
+    for p in lang1:
         # get closest in lang2
         maxsim = 0  # just a small number...
         maxp = None  # max phoneme associate with maxsim
-        for p2 in lang2only:
+        for p2 in lang2:
             pu1 = p.Phoneme
             pu2 = p2.Phoneme
             if pu1 in phonemeMap and pu2 in phonemeMap:
@@ -278,21 +279,12 @@ def getDistinctiveFeatures(lang1, lang2, phonemeMap):
                     #print "missing ", pu2
 
                 sim = 0
-            if sim > maxsim:
-                maxsim = sim
-                maxp = pu2
+            scores[(pu1,pu2)] = sim
+            total += sim
 
-        tp += maxsim
-        fp += 1-maxsim
-        mappedl2.add(maxp)
+    total /= float(len(lang1) * len(lang2))
 
-    fn = len(lang2only.difference(mappedl2))  # unmapped
-
-    prec = tp / float(tp + fp)
-    recall = tp / float(tp + fn)
-    f1 = 2 * prec * recall / (prec + recall)
-
-    return f1
+    return total
 
 
 if __name__ == "__main__":
