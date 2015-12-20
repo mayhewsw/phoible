@@ -237,7 +237,10 @@ phonedist = {}
 
 def getDistinctiveFeatures(lang1, lang2, phonemeMap):
     """
-    Contrast this with getF1
+    Contrast this with getF1.
+
+    I can't get this to work correctly.
+
     :param lang1: a set of Phonemes
     :param lang2: a set of Phonemes
     :return: the Distinctive Features score for these languages.
