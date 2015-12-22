@@ -146,14 +146,19 @@ def langsim(query, langs, only_hr=False, script_rerank=False):
             tgt = langs[langid]
 
 
-            # somehow get script sim here also...
-            scriptdist = stats.compare(hrlangs[query], hrlangs[langid], ss.langdists)
 
             #score = getF1(orig, tgt)
             #score = getDistinctiveFeatures(orig, tgt, pmap)
             score = getOV(tgt, orig, langs["eng"])
 
-            dists.append((scriptdist*score, langid))
+            if script_rerank:
+                # somehow get script sim here also...
+                scriptdist = stats.compare(hrlangs[query], hrlangs[langid], ss.langdists)
+                if scriptdist == -1:
+                    scriptdist = 0
+                score = score * scriptdist
+                
+            dists.append((score, langid))
 
             
     topk = 500
@@ -344,7 +349,7 @@ if __name__ == "__main__":
     if args.langsim:
         print "lang: ", args.langsim
         langs, code2name = loadLangs(phonfile)
-        print langsim(args.langsim[0], langs, only_hr=args.highresource)
+        print langsim(args.langsim[0], langs, only_hr=args.highresource, script_rerank=True)
     elif args.getF1:
         print "langs: ", args.getF1
         langs, code2name = loadLangs(phonfile)

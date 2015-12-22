@@ -16,6 +16,7 @@ Burmese	mya	my	366
 Catalan	cat	ca	7074
 Chechen	che	ce	178
 Chinese	zho	zh	1770
+Chuvash	chv	chv	10000000000
 Croatian	hrv	hr	1588
 Czech	ces	cs	8204
 Danish	dan	da	6281
@@ -83,14 +84,15 @@ Vietnamese	vie	vi	2031
 Volapük	vol	vo	57
 Welsh	cym	cy	542
 Western_Punjabi	pnb	pnb	1459
-Punjabi	pan	pan	1459
+Western_Punjabi	pan	pan	1459
 Mazandarani	mzn	mzn	565
+Yiddish	ydd	ydd	10000000000
 Yoruba	yor	yo	283
 Kirghiz	kir	kir	1000000000
 Bashkir    bak	bak	100000000
 Chechen	che	che	1000000000
-South_Azerbaijani	azb	azb	10000000000
-North_Azerbaijani	azj	azj	10000000000
+Azerbaijani	azb	azb	10000000000
+Azerbaijani	azj	azj	10000000000
 Nepali	nep	nep	10000000
 Marathi	mar	mar	10000000
 English eng eng 10000000

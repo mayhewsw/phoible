@@ -1,6 +1,7 @@
 #!/usr/bin/python
 from os import listdir
 from os.path import isfile, join
+import os.path
 import re
 from collections import defaultdict
 import math
@@ -12,7 +13,10 @@ import pickle
 class StaticStats:
 
     def __init__(self):
-        sizes,langdists = loaddump("sizes-langdists.pkl")
+
+        __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+        
+        sizes,langdists = loaddump(os.path.join(__location__, "sizes-langdists.pkl"))
         self.sizes = sizes
         self.langdists = langdists
 
