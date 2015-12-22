@@ -313,9 +313,7 @@ def getOV(bridge, target, eng):
     bridgeonly = bridge.difference(target)
     targetonly = target.difference(bridge)
 
-
-
-    return 3*len(common) + len(commoneng) + len(bridgeonly) - len(targetonly)
+    return 3*len(common) + len(commoneng) + len(bridgeonly) - 2*len(targetonly)
 
 
 if __name__ == "__main__":
