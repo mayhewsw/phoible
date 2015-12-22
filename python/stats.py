@@ -116,8 +116,10 @@ def makedump(mypath):
 
 def loaddump(fname):
 
-    langdists = pickle.load(fname)
-    return langdists
+    f = open(fname)
+    sizes,langdists = pickle.load(f)
+    f.close()
+    return sizes,langdists
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -131,8 +133,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     #sizes,langdists = getstats(".")
-    langdists = loaddump("langdists.pkl")
-    
+    sizes,langdists = loaddump("sizes-langdists.pkl")
+
     if args.getclosest:
         lang = args.getclosest[0]
         d1 = langdists["wikidata." + lang]
