@@ -142,8 +142,9 @@ def langsim(query, langs, only_hr=False):
             # try getting F1 here instead of just intersection.
             tgt = langs[langid]
 
-            score = getF1(orig, tgt)
+            #score = getF1(orig, tgt)
             #score = getDistinctiveFeatures(orig, tgt, pmap)
+            score = getOV(tgt, orig, langs["eng"])
 
             dists.append((score, langid))
 
@@ -289,6 +290,33 @@ def getDistinctiveFeatures(lang1, lang2, phonemeMap):
 
     return total
 
+def getOV(bridge, target, eng):
+    """
+    This is another measure of transliterability based on overlap and
+    having a richer inventory.
+
+    :param lang1: a set of Phonemes
+    :param lang2: a set of Phonemes
+    :param eng: the set of Phonemes for English.
+    :return: a score, larger is better.
+    """
+    if len(bridge) == 0:
+        print "ERROR: bridge lang is empty or doesn't exist"
+        return -1
+    if len(target) == 0:
+        print "ERROR: target lang is empty or doesn't exist"
+        return -1
+
+    common = bridge.intersection(target)
+    commoneng = bridge.intersection(eng)
+
+    bridgeonly = bridge.difference(target)
+    targetonly = target.difference(bridge)
+
+
+
+    return 3*len(common) + len(commoneng) + len(bridgeonly) - len(targetonly)
+
 
 if __name__ == "__main__":
     import argparse
@@ -299,6 +327,7 @@ if __name__ == "__main__":
     group.add_argument("--langdata", nargs=1)
     group.add_argument("--getF1", help="Get the F1 score between lang1 and lang2", metavar=('lang1', 'lang2'), nargs=2)
     group.add_argument("--getDF", help="Get the Distinctive Feature score between lang1 and lang2", metavar=('lang1', 'lang2'), nargs=2)
+    group.add_argument("--getOV", help="Get the Overlap score between lang1 and lang2", metavar=('bridge', 'target'), nargs=2)
     parser.add_argument("--highresource", "-hr", help="only compare with high resource", action="store_true")
     
     args = parser.parse_args()
@@ -320,6 +349,10 @@ if __name__ == "__main__":
         langs, code2name = loadLangs(phonfile)
         pmap = readFeatureFile()
         print getDistinctiveFeatures(langs[args.getDF[0]], langs[args.getDF[1]], pmap)
+    elif args.getOV:
+        print "langs: ", args.getOV
+        langs, code2name = loadLangs(phonfile)
+        print getOV(langs[args.getOV[0]], langs[args.getOV[1]], langs["eng"])
     elif args.langdata:
         print "getting langdata... for", args.langdata
         d = loadLangData(langfile)
