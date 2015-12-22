@@ -8,6 +8,35 @@ import string
 import argparse
 import pickle
 
+
+class StaticStats:
+
+    def __init__(self):
+        sizes,langdists = loaddump("sizes-langdists.pkl")
+        self.sizes = sizes
+        self.langdists = langdists
+
+
+def compare(langid1, langid2, langdists):
+    """
+    Get score for these two
+    :param langid1:
+    :param langid2:
+    :return: a score of script similarity
+    """
+
+    def f(i):
+        return "wikidata." + i
+
+    if f(langid1) not in langdists or f(langid2) not in langdists:
+        return -1
+
+    l1 = langdists[f(langid1)]
+    l2 = langdists[f(langid2)]
+
+    return simdist(l1, l2)
+
+
 def simdist(d1,d2):
     """
     d1 and d2 are each dictionaries as {char:freq, ...}

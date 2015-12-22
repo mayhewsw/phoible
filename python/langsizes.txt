@@ -84,7 +84,7 @@ Volapük	vol	vo	57
 Welsh	cym	cy	542
 Western_Punjabi	pnb	pnb	1459
 Punjabi	pan	pan	1459
-Mazanderani	mzn	mzn	565
+Mazandarani	mzn	mzn	565
 Yoruba	yor	yo	283
 Kirghiz	kir	kir	1000000000
 Bashkir    bak	bak	100000000
@@ -93,3 +93,4 @@ South_Azerbaijani	azb	azb	10000000000
 North_Azerbaijani	azj	azj	10000000000
 Nepali	nep	nep	10000000
 Marathi	mar	mar	10000000
+English eng eng 10000000
