@@ -2,6 +2,7 @@ from collections import defaultdict
 from scipy.spatial.distance import cosine
 import os
 import codecs
+import stats
 
 
 class Phoneme:
@@ -40,12 +41,12 @@ def getHRLanguages(fname, hrthreshold=0):
     :return: a list of language names (in ISO 639-3 format?)
     """
 
-    hrlangs = set()
+    hrlangs = {}
     with open(fname) as fs:
         for line in fs:
             long,iso639_3,iso639_1,size = line.strip().split()
             if int(size) > hrthreshold:
-                hrlangs.add(iso639_3)
+                hrlangs[iso639_3] = long
     return hrlangs
 
     
@@ -115,7 +116,7 @@ def loadLangData(fname):
     return outdct
                 
 
-def langsim(query, langs, only_hr=False):
+def langsim(query, langs, only_hr=False, script_rerank=False):
     """
 
     :param query: a langcode
@@ -132,6 +133,8 @@ def langsim(query, langs, only_hr=False):
 
     pmap = readFeatureFile()
 
+    ss = stats.StaticStats()
+
     dists = []
 
     for langid in sorted(langs.keys(), reverse=True):
@@ -142,11 +145,15 @@ def langsim(query, langs, only_hr=False):
             # try getting F1 here instead of just intersection.
             tgt = langs[langid]
 
+
+            # somehow get script sim here also...
+            scriptdist = stats.compare(hrlangs[query], hrlangs[langid], ss.langdists)
+
             #score = getF1(orig, tgt)
             #score = getDistinctiveFeatures(orig, tgt, pmap)
             score = getOV(tgt, orig, langs["eng"])
 
-            dists.append((score, langid))
+            dists.append((scriptdist*score, langid))
 
             
     topk = 500
