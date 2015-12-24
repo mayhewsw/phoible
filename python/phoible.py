@@ -3,7 +3,7 @@ from scipy.spatial.distance import cosine
 import os
 import codecs
 import stats
-
+import math
 
 class Phoneme:
     """
@@ -38,15 +38,15 @@ def getHRLanguages(fname, hrthreshold=0):
     """
     :param fname: the name of the file containing filesizes. Created using wc -l in the wikidata folder
     :param hrthreshold: how big a set of transliteration pairs needs to be considered high resource
-    :return: a list of language names (in ISO 639-3 format?)
+    :return: a map of language names (in ISO 639-3 format?)
     """
 
     hrlangs = {}
     with open(fname) as fs:
         for line in fs:
-            long,iso639_3,iso639_1,size = line.strip().split()
+            longname,iso639_3,iso639_1,size = line.strip().split()
             if int(size) > hrthreshold:
-                hrlangs[iso639_3] = long
+                hrlangs[iso639_3] = longname
     return hrlangs
 
     
@@ -116,7 +116,7 @@ def loadLangData(fname):
     return outdct
                 
 
-def langsim(query, langs, only_hr=False, script_rerank=False):
+def langsim(query, langs, code2name, only_hr=False, script_rerank=False):
     """
 
     :param query: a langcode
@@ -145,26 +145,26 @@ def langsim(query, langs, only_hr=False, script_rerank=False):
             # try getting F1 here instead of just intersection.
             tgt = langs[langid]
 
-
-
-            #score = getF1(orig, tgt)
+            score = getF1(orig, tgt)
             #score = getDistinctiveFeatures(orig, tgt, pmap)
-            score = getOV(tgt, orig, langs["eng"])
+            #score = getOV(tgt, orig, langs["eng"])
 
+            langdct = {"phonscore" : score, "langid":langid}
+            
             if script_rerank:
-                # somehow get script sim here also...
-                scriptdist = stats.compare(hrlangs[query], hrlangs[langid], ss.langdists)
+                scriptdist = stats.compare(code2name[query], hrlangs[langid], ss.langdists)
                 if scriptdist == -1:
-                    scriptdist = 0
-                score = score * scriptdist
+                    langdct["scriptdist"] = None
+                else:
+                    langdct["scriptdist"] = scriptdist
                 
-            dists.append((score, langid))
+            dists.append(langdct)
 
             
     topk = 500
-    ret = sorted(dists, reverse=True)[:topk]
+    ret = sorted(dists, key=lambda p: p["phonscore"], reverse=True)[:topk]
 
-    return ret
+    return dists
 
 
 
@@ -325,7 +325,8 @@ def getOV(bridge, target, eng):
     bridgeonly = bridge.difference(target)
     targetonly = target.difference(bridge)
 
-    return 3*len(common) + len(commoneng) + len(bridgeonly) - 2*len(targetonly)
+    return len(common) - len(targetonly)
+    #return len(common)/float(len(target)) + len(bridgeonly) / float(len(bridge)) - len(targetonly) / float(len(target))
 
 
 if __name__ == "__main__":
@@ -349,7 +350,7 @@ if __name__ == "__main__":
     if args.langsim:
         print "lang: ", args.langsim
         langs, code2name = loadLangs(phonfile)
-        print langsim(args.langsim[0], langs, only_hr=args.highresource, script_rerank=True)
+        print langsim(args.langsim[0], langs, code2name, only_hr=args.highresource, script_rerank=True)
     elif args.getF1:
         print "langs: ", args.getF1
         langs, code2name = loadLangs(phonfile)
