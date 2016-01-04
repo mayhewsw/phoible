@@ -116,7 +116,7 @@ def loadLangData(fname):
     return outdct
                 
 
-def langsim(query, langs, code2name, only_hr=False, script_rerank=False):
+def langsim(query, langs, code2name, only_hr=False, script_rerank=False, topk=100000):
     """
 
     :param query: a langcode
@@ -152,7 +152,10 @@ def langsim(query, langs, code2name, only_hr=False, script_rerank=False):
             langdct = {"phonscore" : score, "langid":langid}
             
             if script_rerank:
-                scriptdist = stats.compare(code2name[query], hrlangs[langid], ss.langdists)
+                if langid not in hrlangs:
+                    scriptdist = -1
+                else:
+                    scriptdist = stats.compare(hrlangs[query], hrlangs[langid], ss.langdists)
                 if scriptdist == -1:
                     langdct["scriptdist"] = None
                 else:
@@ -161,10 +164,9 @@ def langsim(query, langs, code2name, only_hr=False, script_rerank=False):
             dists.append(langdct)
 
             
-    topk = 500
     ret = sorted(dists, key=lambda p: p["phonscore"], reverse=True)[:topk]
 
-    return dists
+    return ret
 
 
 

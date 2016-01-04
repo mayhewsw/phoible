@@ -32,7 +32,11 @@ def compare(langid1, langid2, langdists):
     def f(i):
         return "wikidata." + i
 
-    if f(langid1) not in langdists or f(langid2) not in langdists:
+    if f(langid1) not in langdists:
+        print langid1, " not in langdists. (This means there is no wikidata.{0} file)".format(langid1)
+        return -1
+    if f(langid2) not in langdists:
+        print langid2, " not in langdists. (This means there is no wikidata.{0} file)".format(langid2)
         return -1
 
     l1 = langdists[f(langid1)]
