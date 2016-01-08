@@ -50,23 +50,27 @@ def simdist(d1,d2):
     d1 and d2 are each dictionaries as {char:freq, ...}
     This gives a similarity score between them.
     """
-    d1sum = sum(d1.values())
-    d2sum = sum(d2.values())
-    for k in d1:
-        d1[k] /= float(d1sum)
-    for k in d2:
-        d2[k] /= float(d2sum)
+    #d1sum = sum(d1.values())
+    #d2sum = sum(d2.values())
+    #for k in d1:
+    #    d1[k] /= float(d1sum)
+    #for k in d2:
+    #    d2[k] /= float(d2sum)
 
+    d1norm = math.sqrt(sum(map(lambda v: math.pow(v,2), d1.values())))
+    d2norm = math.sqrt(sum(map(lambda v: math.pow(v,2), d2.values())))
     
     d1chars = set(d1.keys())
     d2chars = set(d2.keys())
 
     common = d1chars.intersection(d2chars)
-
+    
     dot = 0
     for char in common:
         v = math.log(d1[char]) + math.log(d2[char])
         dot += math.exp(v)
+
+    dot /= (d1norm * d2norm)
         
     return dot
 
@@ -196,32 +200,34 @@ if __name__ == "__main__":
         # why are first and second
         d1 = langdists["wikidata." + args.compare[0]]
         d2 = langdists["wikidata." + args.compare[1]]
+
+        print simdist(d1, d2)
         
-    # my own little copy of simdist.
-        d1sum = sum(d1.values())
-        d2sum = sum(d2.values())
-        for k in d1:
-            d1[k] /= float(d1sum)
-        for k in d2:
-            d2[k] /= float(d2sum)
+        # my own little copy of simdist.
+        #d1sum = sum(d1.values())
+        #d2sum = sum(d2.values())
+        #for k in d1:
+        #    d1[k] /= float(d1sum)
+        #for k in d2:
+        #    d2[k] /= float(d2sum)
 
 
-        d1chars = set(d1.keys())
-        d2chars = set(d2.keys())
+        #d1chars = set(d1.keys())
+        #d2chars = set(d2.keys())
         
-        common = d1chars.intersection(d2chars)
+        #common = d1chars.intersection(d2chars)
         
-        dot = 0
-        ddd = []
-        for char in common:
-            v = math.log(d1[char]) + math.log(d2[char])
-            dot += math.exp(v)
-            ddd.append((char,math.exp(v)))
+        #dot = 0
+        #ddd = []
+        #for char in common:
+        #    v = math.log(d1[char]) + math.log(d2[char])
+        #    dot += math.exp(v)
+        #    ddd.append((char,math.exp(v)))
         
 
-        for p in sorted(ddd):
-            print p[0],p[1]
-        print "Score: ", dot
+        #for p in sorted(ddd):
+        #    print p[0],p[1]
+        #print "Score: ", dot
     elif args.dumpdists:
         print "WOOOO"
         with open("langdists.pkl","w") as f:

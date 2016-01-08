@@ -217,6 +217,12 @@ def getF1(lang1, lang2):
     tp = len(lang2.intersection(lang1))
     fp = len(lang2.difference(lang1))
     fn = len(lang1.difference(lang2))
+
+    print lang1
+    print lang2
+    
+    print tp,fp,fn
+    
     prec = tp / float(tp + fp) # this is also len(tgt)
     recall = tp / float(tp + fn) # this is also len(orig)
     f1 = 2 * prec * recall / (prec + recall)
